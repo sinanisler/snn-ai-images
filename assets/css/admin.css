@@ -1,0 +1,531 @@
+/**
+ * SNN AI Images Admin CSS
+ */
+
+/* Custom styles for SNN AI Images plugin */
+.snn-ai-dashboard-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Form Elements */
+.snn-input,
+.snn-textarea,
+.snn-select {
+    transition: all 0.2s ease;
+}
+
+.snn-input:focus,
+.snn-textarea:focus,
+.snn-select:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Buttons */
+.snn-button-primary {
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.snn-button-primary:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.snn-button-secondary {
+    transition: all 0.2s ease;
+}
+
+/* Dropzone */
+.snn-dropzone {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.snn-dropzone:hover {
+    border-color: #3B82F6;
+    background-color: #F8FAFC;
+}
+
+.snn-dropzone.snn-dragover {
+    border-color: #3B82F6;
+    background-color: #EBF8FF;
+}
+
+/* Image Previews */
+.snn-image-preview {
+    transition: transform 0.2s ease;
+}
+
+.snn-image-preview:hover {
+    transform: scale(1.02);
+}
+
+.snn-remove-image {
+    transition: all 0.2s ease;
+}
+
+.snn-remove-image:hover {
+    transform: scale(1.1);
+}
+
+/* Stat Cards */
+.snn-stat-card {
+    transition: all 0.2s ease;
+}
+
+.snn-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Brand Kit Cards */
+.snn-brand-kit-card {
+    transition: all 0.2s ease;
+}
+
+.snn-brand-kit-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Color Swatches */
+.snn-color-swatch {
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.snn-color-swatch:hover {
+    transform: scale(1.1);
+}
+
+/* Color Input Wrapper */
+.snn-color-input-wrapper {
+    position: relative;
+}
+
+.snn-color-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+    cursor: pointer;
+}
+
+.snn-color-input::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.snn-color-input::-webkit-color-swatch {
+    border: none;
+    border-radius: 0.375rem;
+}
+
+.snn-color-input::-moz-color-swatch {
+    border: none;
+    border-radius: 0.375rem;
+}
+
+/* Progress Bar */
+.snn-progress-bar {
+    overflow: hidden;
+}
+
+.snn-progress-fill {
+    transition: width 0.3s ease;
+}
+
+/* Notifications */
+.snn-notification {
+    animation: snnSlideIn 0.3s ease;
+}
+
+@keyframes snnSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Modal */
+.snn-modal {
+    backdrop-filter: blur(4px);
+}
+
+.snn-modal-content {
+    animation: snnModalIn 0.3s ease;
+}
+
+@keyframes snnModalIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Generation Results */
+.snn-generation-results {
+    animation: snnFadeIn 0.5s ease;
+}
+
+@keyframes snnFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.snn-result-item {
+    transition: all 0.2s ease;
+}
+
+.snn-result-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* History Items */
+.snn-history-item {
+    transition: all 0.2s ease;
+}
+
+.snn-history-item:hover {
+    transform: translateY(-1px);
+}
+
+/* Status Badges */
+.snn-status-badge {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Action Buttons */
+.snn-action-btn {
+    transition: all 0.2s ease;
+}
+
+.snn-action-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Loading States */
+.snn-loading {
+    display: inline-flex;
+    align-items: center;
+}
+
+.snn-loading .spinner {
+    margin-right: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .snn-ai-dashboard-container {
+        padding: 1rem;
+    }
+    
+    .snn-stat-card {
+        padding: 1rem;
+    }
+    
+    .snn-brand-kit-card {
+        padding: 1rem;
+    }
+    
+    .snn-history-content {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .snn-modal-content {
+        margin: 1rem;
+        max-height: calc(100vh - 2rem);
+    }
+}
+
+/* WordPress Admin Integration */
+.wp-admin .snn-ai-dashboard-container {
+    margin-top: 20px;
+}
+
+.wp-admin .snn-ai-dashboard-container h1 {
+    margin-bottom: 20px;
+}
+
+/* Fix for WordPress admin styles */
+.snn-ai-dashboard-container * {
+    box-sizing: border-box;
+}
+
+/* Checkbox Styles */
+.snn-checkbox {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 0.25rem;
+    border: 1px solid #D1D5DB;
+    transition: all 0.2s ease;
+}
+
+.snn-checkbox:checked {
+    background-color: #3B82F6;
+    border-color: #3B82F6;
+}
+
+.snn-checkbox:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Empty State */
+.snn-empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.snn-empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+/* Pagination */
+.snn-pagination-link {
+    transition: all 0.2s ease;
+}
+
+.snn-pagination-link:hover {
+    transform: translateY(-1px);
+}
+
+/* Line Clamp Utility */
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Utility Classes */
+.snn-shadow-sm {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.snn-shadow-md {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.snn-shadow-lg {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Animation Classes */
+.snn-animate-pulse {
+    animation: snnPulse 2s infinite;
+}
+
+@keyframes snnPulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.snn-animate-spin {
+    animation: snnSpin 1s linear infinite;
+}
+
+@keyframes snnSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Media Library Integration */
+.snn-ai-media-edit-container {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 5px;
+}
+
+.snn-ai-media-preview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.snn-ai-media-controls {
+    margin-top: 15px;
+}
+
+.snn-ai-media-controls label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.snn-ai-media-controls input,
+.snn-ai-media-controls textarea,
+.snn-ai-media-controls select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 14px;
+}
+
+.snn-ai-media-controls textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.snn-ai-media-controls button {
+    margin-top: 10px;
+}
+
+.snn-ai-result {
+    margin-top: 15px;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.snn-ai-result-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.snn-ai-result-actions {
+    margin-top: 10px;
+}
+
+.snn-ai-result-actions button {
+    margin-right: 10px;
+}
+
+/* WooCommerce Integration */
+.snn-ai-product-container {
+    margin-top: 15px;
+}
+
+.snn-ai-product-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.snn-ai-product-actions {
+    margin: 15px 0;
+}
+
+.snn-ai-product-actions button {
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.snn-ai-product-settings {
+    margin-top: 15px;
+}
+
+.snn-ai-product-settings label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.snn-ai-product-settings input,
+.snn-ai-product-settings textarea,
+.snn-ai-product-settings select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.snn-ai-product-results {
+    margin-top: 15px;
+}
+
+.snn-ai-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.snn-ai-result-item {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    background: #fff;
+}
+
+.snn-ai-result-item img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.snn-ai-result-actions {
+    margin-top: 10px;
+}
+
+.snn-ai-result-actions button,
+.snn-ai-result-actions a {
+    display: inline-block;
+    padding: 5px 10px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    text-decoration: none;
+    border-radius: 3px;
+    font-size: 12px;
+    border: none;
+    cursor: pointer;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .snn-ai-dashboard-container {
+        color: #f3f4f6;
+    }
+    
+    .snn-stat-card {
+        background-color: #1f2937;
+        border-color: #374151;
+    }
+    
+    .snn-brand-kit-card {
+        background-color: #1f2937;
+        border-color: #374151;
+    }
+    
+    .snn-history-item {
+        background-color: #1f2937;
+        border-color: #374151;
+    }
+    
+    .snn-modal-content {
+        background-color: #1f2937;
+        color: #f3f4f6;
+    }
+}
