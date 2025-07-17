@@ -1,6 +1,16 @@
 # SNN AI Images - WordPress Plugin
 
-Transform any image into brand-consistent visuals using AI, with specialized features for e-commerce products.
+Transform any image into brand-consistent visuals or edit them using AI, with specialized features for e-commerce products.
+
+
+<img width="49%" height="auto" alt="image" src="https://github.com/user-attachments/assets/061bb6c1-ecc0-4987-b5be-46e18be35961" />
+
+<img width="49%" height="auto" alt="image" src="https://github.com/user-attachments/assets/91b3e3c8-3c9f-4cbb-9da1-8afc19a031bb" />
+
+<img width="49%" height="auto" alt="image" src="https://github.com/user-attachments/assets/113d47b1-8ee6-477e-b248-63bd6dcda12a" />
+
+<img width="49%" height="auto" alt="image" src="https://github.com/user-attachments/assets/1ce7ea42-4bcb-42b5-aeee-04453f09f591" />
+
 
 ## Features
 
