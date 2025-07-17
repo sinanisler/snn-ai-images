@@ -32,6 +32,12 @@ class SNN_AI_Images_WooCommerce {
         add_action('woocommerce_process_product_meta', array($this, 'save_product_ai_fields'));
         add_filter('woocommerce_admin_product_actions', array($this, 'add_product_actions'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_woocommerce_scripts'));
+        
+        // Auto-generation hooks
+        add_action('woocommerce_new_product', array($this, 'check_auto_generation'));
+        add_action('woocommerce_update_product', array($this, 'check_auto_generation'));
+        add_action('attachment_updated', array($this, 'check_product_image_update'));
+        add_action('snn_ai_auto_generate_variations', array($this, 'auto_generate_variations'), 10, 1);
     }
     
     public function add_product_meta_box() {
@@ -363,8 +369,65 @@ class SNN_AI_Images_WooCommerce {
         return $attachment_id;
     }
     
-    public function auto_generate_variations($attachment_id) {
-        // Check if this is a product image and auto-generation is enabled
+    public function auto_generate_variations($product_id, $attachment_id = null) {
+        // Check if this is a product and auto-generation is enabled
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            return;
+        }
+        
+        $auto_generate = get_post_meta($product_id, '_snn_ai_auto_generate_variations', true);
+        if ($auto_generate !== 'yes') {
+            return;
+        }
+        
+        // Get the main product image
+        $image_id = $attachment_id ?: $product->get_image_id();
+        if (!$image_id) {
+            return;
+        }
+        
+        // Get product description for AI prompt
+        $product_description = get_post_meta($product_id, '_snn_ai_product_description', true);
+        if (empty($product_description)) {
+            $product_description = $product->get_name();
+        }
+        
+        // Generate 3 variations automatically
+        $prompt = sprintf(__('Product variations of %s with different angles and lighting', 'snn-ai-images'), $product_description);
+        
+        try {
+            $image_processor = SNN_AI_Images_Image_Processor::get_instance();
+            $result = $image_processor->process_image($image_id, $prompt, '', null, 'product_variation');
+            
+            if (!is_wp_error($result)) {
+                // Add generated image to product gallery
+                $gallery_ids = $product->get_gallery_image_ids();
+                $gallery_ids[] = $result;
+                $product->set_gallery_image_ids($gallery_ids);
+                $product->save();
+                
+                error_log("SNN AI Images - Auto-generated variation for product $product_id");
+            }
+        } catch (Exception $e) {
+            error_log("SNN AI Images - Auto-generation failed for product $product_id: " . $e->getMessage());
+        }
+    }
+
+    public function check_auto_generation($product_id) {
+        // Check if auto-generation is enabled for this product
+        $auto_generate = get_post_meta($product_id, '_snn_ai_auto_generate_variations', true);
+        if ($auto_generate === 'yes') {
+            $product = wc_get_product($product_id);
+            if ($product && $product->get_image_id()) {
+                // Schedule auto-generation with a delay to avoid conflicts
+                wp_schedule_single_event(time() + 60, 'snn_ai_auto_generate_variations', array($product_id));
+            }
+        }
+    }
+
+    public function check_product_image_update($attachment_id) {
+        // Check if this attachment is a product image
         $parent_id = wp_get_post_parent_id($attachment_id);
         if (!$parent_id) {
             return;
@@ -375,12 +438,9 @@ class SNN_AI_Images_WooCommerce {
             return;
         }
         
-        $auto_generate = get_post_meta($parent_id, '_snn_ai_auto_generate_variations', true);
-        if ($auto_generate !== 'yes') {
-            return;
+        // Check if this is the main product image
+        if ($product->get_image_id() == $attachment_id) {
+            $this->check_auto_generation($parent_id);
         }
-        
-        // Generate variations in background
-        wp_schedule_single_event(time() + 30, 'snn_ai_auto_generate_variations', array($parent_id, $attachment_id));
     }
 }

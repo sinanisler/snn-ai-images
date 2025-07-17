@@ -111,6 +111,42 @@ class SNN_AI_Images_API {
                 )
             )
         ));
+
+        register_rest_route('snn-ai/v1', '/brand-kits/(?P<id>\d+)/duplicate', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'duplicate_brand_kit'),
+            'permission_callback' => array($this, 'check_brand_kit_permissions'),
+            'args' => array(
+                'id' => array(
+                    'required' => true,
+                    'type' => 'integer'
+                )
+            )
+        ));
+
+        register_rest_route('snn-ai/v1', '/brand-kits/(?P<id>\d+)/export', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'export_brand_kit'),
+            'permission_callback' => array($this, 'check_brand_kit_permissions'),
+            'args' => array(
+                'id' => array(
+                    'required' => true,
+                    'type' => 'integer'
+                )
+            )
+        ));
+
+        register_rest_route('snn-ai/v1', '/brand-kits/import', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'import_brand_kit'),
+            'permission_callback' => array($this, 'check_brand_kit_permissions'),
+            'args' => array(
+                'brand_kit_data' => array(
+                    'required' => true,
+                    'type' => 'object'
+                )
+            )
+        ));
         
         register_rest_route('snn-ai/v1', '/history', array(
             'methods' => 'GET',
@@ -299,6 +335,56 @@ class SNN_AI_Images_API {
         }
         
         return new WP_Error('deletion_failed', __('Failed to delete brand kit.', 'snn-ai-images'), array('status' => 500));
+    }
+
+    public function duplicate_brand_kit($request) {
+        $brand_kit_id = $request['id'];
+        
+        $brand_kit_manager = SNN_AI_Images_Brand_Kit::get_instance();
+        $new_brand_kit_id = $brand_kit_manager->duplicate_brand_kit($brand_kit_id);
+        
+        if ($new_brand_kit_id && !is_wp_error($new_brand_kit_id)) {
+            $new_brand_kit = $brand_kit_manager->get_brand_kit($new_brand_kit_id);
+            return new WP_REST_Response(array(
+                'success' => true,
+                'brand_kit' => $new_brand_kit
+            ), 200);
+        }
+        
+        return new WP_Error('duplication_failed', __('Failed to duplicate brand kit.', 'snn-ai-images'), array('status' => 500));
+    }
+
+    public function export_brand_kit($request) {
+        $brand_kit_id = $request['id'];
+        
+        $brand_kit_manager = SNN_AI_Images_Brand_Kit::get_instance();
+        $export_data = $brand_kit_manager->export_brand_kit($brand_kit_id);
+        
+        if ($export_data) {
+            return new WP_REST_Response(array(
+                'success' => true,
+                'export_data' => $export_data
+            ), 200);
+        }
+        
+        return new WP_Error('export_failed', __('Failed to export brand kit.', 'snn-ai-images'), array('status' => 500));
+    }
+
+    public function import_brand_kit($request) {
+        $brand_kit_data = $request['brand_kit_data'];
+        
+        $brand_kit_manager = SNN_AI_Images_Brand_Kit::get_instance();
+        $new_brand_kit_id = $brand_kit_manager->import_brand_kit($brand_kit_data);
+        
+        if ($new_brand_kit_id && !is_wp_error($new_brand_kit_id)) {
+            $new_brand_kit = $brand_kit_manager->get_brand_kit($new_brand_kit_id);
+            return new WP_REST_Response(array(
+                'success' => true,
+                'brand_kit' => $new_brand_kit
+            ), 200);
+        }
+        
+        return new WP_Error('import_failed', __('Failed to import brand kit.', 'snn-ai-images'), array('status' => 500));
     }
     
     public function get_generation_history($request) {

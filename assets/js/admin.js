@@ -42,6 +42,11 @@
             fileInput.click();
         });
 
+        // Prevent file input click from bubbling up to dropzone
+        fileInput.on('click', function(e) {
+            e.stopPropagation();
+        });
+
         // Handle file input change
         fileInput.on('change', function(e) {
             handleFileSelection(e.target.files);

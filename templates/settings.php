@@ -3,23 +3,19 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Handle form submission
-if (isset($_POST['submit']) && check_admin_referer('snn_ai_settings', 'snn_ai_settings_nonce')) {
-    $settings = get_option('snn_ai_images_settings', array());
-    
-    $settings['api_key'] = sanitize_text_field($_POST['api_key']);
-    $settings['model'] = sanitize_text_field($_POST['model']);
-    $settings['max_generations_per_user'] = absint($_POST['max_generations_per_user']);
-    $settings['max_image_dimension'] = absint($_POST['max_image_dimension']);
-    $settings['allowed_file_types'] = isset($_POST['allowed_file_types']) ? array_map('sanitize_text_field', $_POST['allowed_file_types']) : array();
-    
-    update_option('snn_ai_images_settings', $settings);
-    
-    echo '<div class="notice notice-success is-dismissible"><p>' . __('Settings saved successfully!', 'snn-ai-images') . '</p></div>';
+// Handle form submission - Use WordPress Settings API for consistency
+if (isset($_POST['submit'])) {
+    // Let WordPress Settings API handle this
+    if (isset($_POST['snn_ai_images_settings']) && wp_verify_nonce($_POST['_wpnonce'], 'snn_ai_images_settings-options')) {
+        $admin = SNN_AI_Images_Admin::get_instance();
+        $sanitized = $admin->sanitize_settings($_POST['snn_ai_images_settings']);
+        update_option('snn_ai_images_settings', $sanitized);
+        echo '<div class="notice notice-success is-dismissible"><p>' . __('Settings saved successfully!', 'snn-ai-images') . '</p></div>';
+    }
 }
 
 // Test API connection
-if (isset($_POST['test_api']) && wp_verify_nonce($_POST['snn_ai_settings_nonce'], 'snn_ai_settings')) {
+if (isset($_POST['test_api']) && wp_verify_nonce($_POST['_wpnonce'], 'snn_ai_images_settings-options')) {
     $together_ai = SNN_AI_Images_Together_AI::get_instance();
     $test_result = $together_ai->test_connection();
     
@@ -34,6 +30,10 @@ $settings = get_option('snn_ai_images_settings', array(
     'api_key' => '',
     'model' => 'black-forest-labs/FLUX.1-schnell',
     'max_generations_per_user' => 50,
+    'max_file_size' => wp_max_upload_size(),
+    'max_files_per_upload' => 5,
+    'max_image_dimension' => 1024,
+    'temp_directory' => wp_upload_dir()['basedir'] . '/snn-ai-temp/',
     'allowed_file_types' => array('jpg', 'jpeg', 'png', 'gif', 'webp')
 ));
 ?>
@@ -43,7 +43,8 @@ $settings = get_option('snn_ai_images_settings', array(
     
     <div class="snn-settings-container max-w-4xl mx-auto p-6">
         <form method="post" action="" class="snn-settings-form">
-            <?php wp_nonce_field('snn_ai_settings', 'snn_ai_settings_nonce'); ?>
+            <?php settings_fields('snn_ai_images_settings'); ?>
+            <?php wp_nonce_field('snn_ai_images_settings-options'); ?>
             
             <!-- API Configuration -->
             <div class="snn-settings-section bg-white rounded-lg shadow-md p-6 mb-6">
@@ -61,7 +62,7 @@ $settings = get_option('snn_ai_images_settings', array(
                         <input 
                             type="password" 
                             id="api_key" 
-                            name="api_key" 
+                            name="snn_ai_images_settings[api_key]" 
                             value="<?php echo esc_attr($settings['api_key']); ?>" 
                             class="snn-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="<?php esc_attr_e('Enter your Together AI API key', 'snn-ai-images'); ?>"
@@ -79,7 +80,7 @@ $settings = get_option('snn_ai_images_settings', array(
                         </label>
                         <select 
                             id="model" 
-                            name="model" 
+                            name="snn_ai_images_settings[model]" 
                             class="snn-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             data-tippy-content="<?php esc_attr_e('Choose the AI model for image generation', 'snn-ai-images'); ?>"
                         >
@@ -110,7 +111,7 @@ $settings = get_option('snn_ai_images_settings', array(
                         <input 
                             type="number" 
                             id="max_generations_per_user" 
-                            name="max_generations_per_user" 
+                            name="snn_ai_images_settings[max_generations_per_user]" 
                             value="<?php echo esc_attr($settings['max_generations_per_user']); ?>" 
                             min="1" 
                             max="1000" 
@@ -129,7 +130,7 @@ $settings = get_option('snn_ai_images_settings', array(
                         <input 
                             type="number" 
                             id="max_image_dimension" 
-                            name="max_image_dimension" 
+                            name="snn_ai_images_settings[max_image_dimension]" 
                             value="<?php echo esc_attr($settings['max_image_dimension'] ?? 1024); ?>" 
                             min="512" 
                             max="2048" 
@@ -139,6 +140,60 @@ $settings = get_option('snn_ai_images_settings', array(
                         >
                         <p class="snn-form-description text-sm text-gray-600 mt-1">
                             <?php _e('Recommended: 1024. Affects cost and processing time.', 'snn-ai-images'); ?>
+                        </p>
+                    </div>
+
+                    <div class="snn-form-group">
+                        <label for="max_file_size" class="block text-sm font-medium text-gray-700 mb-2">
+                            <?php _e('Max File Size (bytes)', 'snn-ai-images'); ?>
+                        </label>
+                        <input 
+                            type="number" 
+                            id="max_file_size" 
+                            name="snn_ai_images_settings[max_file_size]" 
+                            value="<?php echo esc_attr($settings['max_file_size'] ?? wp_max_upload_size()); ?>" 
+                            min="1024" 
+                            class="snn-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            data-tippy-content="<?php esc_attr_e('Maximum file size for uploads in bytes', 'snn-ai-images'); ?>"
+                        >
+                        <p class="snn-form-description text-sm text-gray-600 mt-1">
+                            <?php printf(__('Current WordPress limit: %s', 'snn-ai-images'), size_format(wp_max_upload_size())); ?>
+                        </p>
+                    </div>
+
+                    <div class="snn-form-group">
+                        <label for="max_files_per_upload" class="block text-sm font-medium text-gray-700 mb-2">
+                            <?php _e('Max Files Per Upload', 'snn-ai-images'); ?>
+                        </label>
+                        <input 
+                            type="number" 
+                            id="max_files_per_upload" 
+                            name="snn_ai_images_settings[max_files_per_upload]" 
+                            value="<?php echo esc_attr($settings['max_files_per_upload'] ?? 5); ?>" 
+                            min="1" 
+                            max="20"
+                            class="snn-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            data-tippy-content="<?php esc_attr_e('Maximum number of files that can be uploaded at once', 'snn-ai-images'); ?>"
+                        >
+                        <p class="snn-form-description text-sm text-gray-600 mt-1">
+                            <?php _e('Recommended: 5-10 files maximum', 'snn-ai-images'); ?>
+                        </p>
+                    </div>
+
+                    <div class="snn-form-group">
+                        <label for="temp_directory" class="block text-sm font-medium text-gray-700 mb-2">
+                            <?php _e('Temporary Directory', 'snn-ai-images'); ?>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="temp_directory" 
+                            name="snn_ai_images_settings[temp_directory]" 
+                            value="<?php echo esc_attr($settings['temp_directory'] ?? wp_upload_dir()['basedir'] . '/snn-ai-temp/'); ?>" 
+                            class="snn-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            data-tippy-content="<?php esc_attr_e('Directory for temporary files during processing. Must be writable.', 'snn-ai-images'); ?>"
+                        >
+                        <p class="snn-form-description text-sm text-gray-600 mt-1">
+                            <?php _e('Directory must be writable by the web server', 'snn-ai-images'); ?>
                         </p>
                     </div>
                 </div>
@@ -174,7 +229,7 @@ $settings = get_option('snn_ai_images_settings', array(
                         foreach ($file_types as $type => $label) {
                             $checked = in_array($type, $settings['allowed_file_types']) ? 'checked' : '';
                             echo '<label class="snn-checkbox-label flex items-center">';
-                            echo '<input type="checkbox" name="allowed_file_types[]" value="' . esc_attr($type) . '" ' . $checked . ' class="snn-checkbox mr-2">';
+                            echo '<input type="checkbox" name="snn_ai_images_settings[allowed_file_types][]" value="' . esc_attr($type) . '" ' . $checked . ' class="snn-checkbox mr-2">';
                             echo '<span class="text-sm text-gray-700">' . esc_html($label) . '</span>';
                             echo '</label>';
                         }

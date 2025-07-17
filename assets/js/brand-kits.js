@@ -38,6 +38,31 @@
             duplicateBrandKit(brandKitId);
         });
 
+        // Handle export brand kit
+        $(document).on('click', '.snn-export-brand-kit', function(e) {
+            e.preventDefault();
+            const brandKitId = $(this).data('brand-kit-id');
+            exportBrandKit(brandKitId);
+        });
+
+        // Handle import brand kit
+        $(document).on('click', '#snn-import-brand-kit', function(e) {
+            e.preventDefault();
+            openImportModal();
+        });
+
+        // Handle import form submission
+        $(document).on('submit', '#snn-import-form', function(e) {
+            e.preventDefault();
+            importBrandKit();
+        });
+
+        // Handle import modal close
+        $(document).on('click', '#snn-cancel-import, #snn-import-modal .snn-close-modal', function(e) {
+            e.preventDefault();
+            closeImportModal();
+        });
+
         // Handle use brand kit
         $(document).on('click', '.snn-use-brand-kit', function(e) {
             e.preventDefault();
@@ -67,6 +92,25 @@
         $(document).on('click', '.snn-remove-color', function(e) {
             e.preventDefault();
             $(this).closest('.snn-color-input-wrapper').remove();
+        });
+
+        // Handle dropdown menu toggle
+        $(document).on('click', '.snn-brand-kit-menu', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Close all other dropdowns
+            $('.dropdown-menu').addClass('hidden');
+            
+            // Toggle this dropdown
+            $(this).siblings('.dropdown-menu').toggleClass('hidden');
+        });
+
+        // Close dropdowns when clicking outside
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.dropdown').length) {
+                $('.dropdown-menu').addClass('hidden');
+            }
         });
 
         // Initialize color inputs
@@ -240,24 +284,9 @@
     }
 
     function duplicateBrandKit(brandKitId) {
-        // Find the original brand kit data
-        const originalCard = $(`.snn-brand-kit-card[data-brand-kit-id="${brandKitId}"]`);
-        const originalName = originalCard.find('.snn-brand-kit-name').text();
-        const colors = originalCard.find('.snn-color-swatch').map(function() {
-            return rgbToHex($(this).css('background-color'));
-        }).get();
-        
-        const data = {
-            name: originalName + ' (Copy)',
-            colors: colors,
-            fonts: [],
-            style_guidelines: ''
-        };
-        
         wp.apiFetch({
-            path: 'snn-ai/v1/brand-kits',
-            method: 'POST',
-            data: data
+            path: `snn-ai/v1/brand-kits/${brandKitId}/duplicate`,
+            method: 'POST'
         }).then(function(response) {
             if (response.success) {
                 showNotification('Brand kit duplicated successfully!', 'success');
@@ -269,6 +298,99 @@
             console.error('Duplicate error:', error);
             showNotification('Failed to duplicate brand kit', 'error');
         });
+    }
+
+    function exportBrandKit(brandKitId) {
+        wp.apiFetch({
+            path: `snn-ai/v1/brand-kits/${brandKitId}/export`,
+            method: 'GET'
+        }).then(function(response) {
+            if (response.success) {
+                // Create and download JSON file
+                const dataStr = JSON.stringify(response.export_data, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `brand-kit-${response.export_data.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                showNotification('Brand kit exported successfully!', 'success');
+            } else {
+                showNotification('Failed to export brand kit', 'error');
+            }
+        }).catch(function(error) {
+            console.error('Export error:', error);
+            showNotification('Failed to export brand kit', 'error');
+        });
+    }
+
+    function openImportModal() {
+        $('#snn-import-modal').removeClass('hidden');
+        $('#snn-import-file').val('');
+    }
+
+    function closeImportModal() {
+        $('#snn-import-modal').addClass('hidden');
+        $('#snn-import-file').val('');
+    }
+
+    function importBrandKit() {
+        const fileInput = document.getElementById('snn-import-file');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            showNotification('Please select a file to import', 'error');
+            return;
+        }
+        
+        if (!file.name.endsWith('.json')) {
+            showNotification('Please select a valid JSON file', 'error');
+            return;
+        }
+        
+        // Show loading state
+        $('.snn-import-text').addClass('hidden');
+        $('.snn-import-loading').removeClass('hidden');
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const brandKitData = JSON.parse(e.target.result);
+                
+                wp.apiFetch({
+                    path: 'snn-ai/v1/brand-kits/import',
+                    method: 'POST',
+                    data: {
+                        brand_kit_data: brandKitData
+                    }
+                }).then(function(response) {
+                    if (response.success) {
+                        showNotification('Brand kit imported successfully!', 'success');
+                        closeImportModal();
+                        location.reload(); // Refresh to show imported brand kit
+                    } else {
+                        showNotification('Failed to import brand kit', 'error');
+                    }
+                }).catch(function(error) {
+                    console.error('Import error:', error);
+                    showNotification('Failed to import brand kit', 'error');
+                }).finally(function() {
+                    // Hide loading state
+                    $('.snn-import-text').removeClass('hidden');
+                    $('.snn-import-loading').addClass('hidden');
+                });
+            } catch (error) {
+                showNotification('Invalid JSON file format', 'error');
+                $('.snn-import-text').removeClass('hidden');
+                $('.snn-import-loading').addClass('hidden');
+            }
+        };
+        reader.readAsText(file);
     }
 
     function useBrandKit(brandKitId) {

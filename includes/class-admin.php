@@ -92,6 +92,17 @@ class SNN_AI_Images_Admin {
             SNN_AI_IMAGES_VERSION,
             true
         );
+
+        // Enqueue brand kits JS on brand kits page
+        if (strpos($hook, 'brand-kits') !== false) {
+            wp_enqueue_script(
+                'snn-ai-brand-kits',
+                SNN_AI_IMAGES_PLUGIN_URL . 'assets/js/brand-kits.js',
+                array('jquery', 'wp-api-fetch'),
+                SNN_AI_IMAGES_VERSION,
+                true
+            );
+        }
         
         // Enqueue custom admin CSS
         wp_enqueue_style(
@@ -198,6 +209,22 @@ class SNN_AI_Images_Admin {
             'snn-ai-images-settings',
             'snn_ai_images_security_section'
         );
+
+        add_settings_field(
+            'max_image_dimension',
+            __('Max Image Dimension (px)', 'snn-ai-images'),
+            array($this, 'max_image_dimension_callback'),
+            'snn-ai-images-settings',
+            'snn_ai_images_security_section'
+        );
+
+        add_settings_field(
+            'temp_directory',
+            __('Temporary Directory', 'snn-ai-images'),
+            array($this, 'temp_directory_callback'),
+            'snn-ai-images-settings',
+            'snn_ai_images_security_section'
+        );
     }
     
     public function sanitize_settings($input) {
@@ -292,6 +319,20 @@ class SNN_AI_Images_Admin {
         $max_generations = $settings['max_generations_per_user'] ?? 50;
         echo '<input type="number" name="snn_ai_images_settings[max_generations_per_user]" value="' . esc_attr($max_generations) . '" min="1" max="1000" />';
         echo '<p class="description">' . __('Maximum number of generations per user per month.', 'snn-ai-images') . '</p>';
+    }
+
+    public function max_image_dimension_callback() {
+        $settings = get_option('snn_ai_images_settings');
+        $max_dimension = $settings['max_image_dimension'] ?? 1024;
+        echo '<input type="number" name="snn_ai_images_settings[max_image_dimension]" value="' . esc_attr($max_dimension) . '" min="512" max="2048" step="64" />';
+        echo '<p class="description">' . __('Maximum width or height for images sent to AI. Larger images will be resized.', 'snn-ai-images') . '</p>';
+    }
+
+    public function temp_directory_callback() {
+        $settings = get_option('snn_ai_images_settings');
+        $temp_dir = $settings['temp_directory'] ?? wp_upload_dir()['basedir'] . '/snn-ai-temp/';
+        echo '<input type="text" name="snn_ai_images_settings[temp_directory]" value="' . esc_attr($temp_dir) . '" class="regular-text" />';
+        echo '<p class="description">' . __('Directory for temporary files during processing. Must be writable.', 'snn-ai-images') . '</p>';
     }
     
     public function dashboard_page() {

@@ -9,6 +9,7 @@ $brand_kits = SNN_AI_Images_Brand_Kit::get_instance()->get_user_brand_kits(get_c
 <div class="wrap">
     <h1 class="wp-heading-inline"><?php _e('Brand Kits', 'snn-ai-images'); ?></h1>
     <a href="#" class="page-title-action" id="snn-add-brand-kit"><?php _e('Add New', 'snn-ai-images'); ?></a>
+    <a href="#" class="page-title-action" id="snn-import-brand-kit"><?php _e('Import', 'snn-ai-images'); ?></a>
     
     <div class="snn-brand-kits-container max-w-7xl mx-auto p-6">
         <!-- Brand Kits Grid -->
@@ -23,16 +24,28 @@ $brand_kits = SNN_AI_Images_Brand_Kit::get_instance()->get_user_brand_kits(get_c
                         <div class="snn-brand-kit-header flex items-center justify-between mb-4">
                             <h3 class="snn-brand-kit-name text-lg font-medium text-gray-800"><?php echo esc_html($brand_kit->name); ?></h3>
                             <div class="snn-brand-kit-actions">
-                                <button type="button" class="snn-edit-brand-kit text-blue-600 hover:text-blue-800 mr-2" data-brand-kit-id="<?php echo esc_attr($brand_kit->id); ?>" data-tippy-content="<?php esc_attr_e('Edit brand kit', 'snn-ai-images'); ?>">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                    </svg>
-                                </button>
-                                <button type="button" class="snn-delete-brand-kit text-red-600 hover:text-red-800" data-brand-kit-id="<?php echo esc_attr($brand_kit->id); ?>" data-tippy-content="<?php esc_attr_e('Delete brand kit', 'snn-ai-images'); ?>">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                </button>
+                                <div class="dropdown">
+                                    <button type="button" class="snn-brand-kit-menu text-gray-600 hover:text-gray-800" data-tippy-content="<?php esc_attr_e('More actions', 'snn-ai-images'); ?>">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zM12 13a1 1 0 110-2 1 1 0 010 2zM12 20a1 1 0 110-2 1 1 0 010 2z"></path>
+                                        </svg>
+                                    </button>
+                                    <div class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                                        <button type="button" class="snn-edit-brand-kit block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100" data-brand-kit-id="<?php echo esc_attr($brand_kit->id); ?>">
+                                            <?php _e('Edit', 'snn-ai-images'); ?>
+                                        </button>
+                                        <button type="button" class="snn-duplicate-brand-kit block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100" data-brand-kit-id="<?php echo esc_attr($brand_kit->id); ?>">
+                                            <?php _e('Duplicate', 'snn-ai-images'); ?>
+                                        </button>
+                                        <button type="button" class="snn-export-brand-kit block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100" data-brand-kit-id="<?php echo esc_attr($brand_kit->id); ?>">
+                                            <?php _e('Export', 'snn-ai-images'); ?>
+                                        </button>
+                                        <hr class="my-1">
+                                        <button type="button" class="snn-delete-brand-kit block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50" data-brand-kit-id="<?php echo esc_attr($brand_kit->id); ?>">
+                                            <?php _e('Delete', 'snn-ai-images'); ?>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
@@ -200,6 +213,53 @@ $brand_kits = SNN_AI_Images_Brand_Kit::get_instance()->get_user_brand_kits(get_c
                 </button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Import Brand Kit Modal -->
+<div id="snn-import-modal" class="snn-modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="snn-modal-content bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="snn-modal-header p-6 border-b border-gray-200">
+            <h3 class="snn-modal-title text-lg font-medium text-gray-800"><?php _e('Import Brand Kit', 'snn-ai-images'); ?></h3>
+            <button type="button" class="snn-close-modal absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="snn-modal-body p-6">
+            <form id="snn-import-form" enctype="multipart/form-data">
+                <div class="snn-form-group mb-4">
+                    <label for="snn-import-file" class="block text-sm font-medium text-gray-700 mb-2">
+                        <?php _e('Select Brand Kit File', 'snn-ai-images'); ?>
+                    </label>
+                    <input 
+                        type="file" 
+                        id="snn-import-file" 
+                        accept=".json"
+                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    >
+                    <p class="text-xs text-gray-500 mt-1"><?php _e('Upload a .json file exported from another brand kit', 'snn-ai-images'); ?></p>
+                </div>
+                
+                <div class="snn-form-actions flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                    <button type="button" class="snn-button-secondary bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md transition-colors" id="snn-cancel-import">
+                        <?php _e('Cancel', 'snn-ai-images'); ?>
+                    </button>
+                    <button type="submit" class="snn-button-primary bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
+                        <span class="snn-import-text"><?php _e('Import', 'snn-ai-images'); ?></span>
+                        <span class="snn-import-loading hidden">
+                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <?php _e('Importing...', 'snn-ai-images'); ?>
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
