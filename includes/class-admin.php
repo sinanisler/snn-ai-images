@@ -32,7 +32,7 @@ class SNN_AI_Images_Admin {
             'snn-ai-images-dashboard',
             array($this, 'dashboard_page'),
             'dashicons-art',
-            30
+            82
         );
         
         add_submenu_page(
